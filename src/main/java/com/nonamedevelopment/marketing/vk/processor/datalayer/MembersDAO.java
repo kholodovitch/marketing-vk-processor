@@ -23,7 +23,7 @@ public class MembersDAO {
 	private BaseConnector connector;
 
 	private MembersDAO() throws PropertyVetoException {
-		connector = new BaseConnector();
+		connector = BaseConnector.getInstance();
 	}
 
 	public List<Member> getMembers(UUID groupId) throws SQLException {

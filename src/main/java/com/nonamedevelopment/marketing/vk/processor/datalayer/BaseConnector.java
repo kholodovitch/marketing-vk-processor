@@ -31,9 +31,18 @@ public class BaseConnector {
 		public abstract T process(ResultSet resultSet) throws SQLException;
 	}
 
+	private static BaseConnector instance;
+
+	public static final BaseConnector getInstance() throws PropertyVetoException {
+		if (instance == null) {
+			instance = new BaseConnector();
+		}
+		return instance;
+	}
+
 	private ComboPooledDataSource dataSource;
 
-	public BaseConnector() throws PropertyVetoException {
+	private BaseConnector() throws PropertyVetoException {
 		dataSource = new ComboPooledDataSource();
 		dataSource.setDriverClass("com.mysql.jdbc.Driver");
 		dataSource.setJdbcUrl("jdbc:mysql://127.0.0.1/nndev_vkmarketing?user=dev&password=pass&characterEncoding=utf-8");

@@ -22,7 +22,7 @@ public class UsersDAO {
 	private BaseConnector connector;
 
 	private UsersDAO() throws PropertyVetoException {
-		connector = new BaseConnector();
+		connector = BaseConnector.getInstance();
 	}
 
 	public User get(Integer id) throws SQLException {

@@ -21,7 +21,7 @@ public class GroupsDAO {
 	private BaseConnector connector;
 
 	private GroupsDAO() throws PropertyVetoException {
-		connector = new BaseConnector();
+		connector = BaseConnector.getInstance();
 	}
 
 	public List<Group> getGroups() throws SQLException {
