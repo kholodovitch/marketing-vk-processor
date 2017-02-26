@@ -45,7 +45,7 @@ public class MembersDAO {
 	}
 
 	public boolean insert(Member newMember) throws SQLException {
-		return connector.processUpdate("INSERT DELAYED INTO sn_members (group_id, user_id, join_time) VALUES (?, ?, ?)", new SqlUpdateCallback() {
+		return connector.processUpdate("INSERT INTO sn_members (group_id, user_id, join_time) VALUES (?, ?, ?)", new SqlUpdateCallback() {
 			@Override
 			public void addParams(PreparedStatement statement) throws SQLException {
 				statement.setString(1, newMember.getGroupId().toString());

@@ -44,7 +44,7 @@ public class UsersDAO {
 
 	public UUID insert(User user) throws SQLException {
 		final UUID newId = UUID.randomUUID();
-		final String sql = "INSERT DELAYED INTO sn_users (id, sn_code, sn_id, first_name, last_name, bdate, sex, relation, photo_50, country_id, city_id, can_write_private_message, can_send_friend_request) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		final String sql = "INSERT INTO sn_users (id, sn_code, sn_id, first_name, last_name, bdate, sex, relation, photo_50, country_id, city_id, can_write_private_message, can_send_friend_request) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 		connector.processUpdate(sql, new SqlUpdateCallback() {
 			@Override

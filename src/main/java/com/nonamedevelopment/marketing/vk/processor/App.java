@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.nonamedevelopment.marketing.vk.processor.datalayer.Group;
@@ -27,7 +28,11 @@ import com.vk.api.sdk.queries.groups.GroupsGetMembersQueryWithFields;
 import com.vk.api.sdk.queries.users.UserField;
 
 public class App {
+	private static long joinTime;
+
 	public static void main(String[] args) throws ApiException, ClientException, SQLException, PropertyVetoException {
+		joinTime = System.currentTimeMillis() / 1000L;
+
 		TransportClient transportClient = HttpTransportClient.getInstance();
 		VkApiClient vk = new VkApiClient(transportClient);
 
@@ -74,16 +79,17 @@ public class App {
 			}
 		};
 
-		IntStream
+		List<UserXtrRole> vkMembers = IntStream
 			.rangeClosed(0, vkGroups.get(0).getMembersCount() / 1000)
 			.parallel()
 			.mapToObj(mapper)
 			.flatMap(List::stream)
-			.forEach(action);
+			.collect(Collectors.toList());
+
+		vkMembers.parallelStream().forEach(action);
 	}
 
 	private static void processUser(UserXtrRole vkUser, Group group, List<Member> existsMembers) throws SQLException, PropertyVetoException {
-		long joinTime = 1488629204L;// System.currentTimeMillis() / 1000;
 		User existsUser = UsersDAO.getInstance().get(vkUser.getId());
 		UUID newIserId = existsUser == null ? UsersDAO.getInstance().insert(toUser(vkUser)) : existsUser.getId();
 
