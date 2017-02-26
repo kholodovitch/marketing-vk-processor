@@ -1,29 +1,97 @@
 package com.nonamedevelopment.marketing.vk.processor;
 
+import java.beans.PropertyVetoException;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 
+import com.nonamedevelopment.marketing.vk.processor.datalayer.Group;
+import com.nonamedevelopment.marketing.vk.processor.datalayer.GroupsDAO;
+import com.nonamedevelopment.marketing.vk.processor.datalayer.Member;
+import com.nonamedevelopment.marketing.vk.processor.datalayer.MembersDAO;
+import com.nonamedevelopment.marketing.vk.processor.datalayer.User;
+import com.nonamedevelopment.marketing.vk.processor.datalayer.UsersDAO;
 import com.vk.api.sdk.client.TransportClient;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.groups.UserXtrRole;
+import com.vk.api.sdk.queries.groups.GroupsGetMembersQueryWithFields;
 import com.vk.api.sdk.queries.users.UserField;
 
 public class App {
-	public static void main(String[] args) throws ApiException, ClientException {
+	public static void main(String[] args) throws ApiException, ClientException, SQLException, PropertyVetoException {
 		TransportClient transportClient = HttpTransportClient.getInstance();
 		VkApiClient vk = new VkApiClient(transportClient);
+
+		List<Group> groups = GroupsDAO.getInstance().getGroups();
+		groups.parallelStream().forEach(group -> {
+			try {
+				processGroup(vk, group);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+	}
+
+	private static void processGroup(VkApiClient vk, Group group) throws SQLException, PropertyVetoException, ApiException, ClientException {
 		UserField[] fields = new UserField[] { UserField.SEX, UserField.BDATE, UserField.RELATION, UserField.PHOTO_50, UserField.COUNTRY, UserField.CITY, UserField.CAN_WRITE_PRIVATE_MESSAGE, UserField.CAN_SEND_FRIEND_REQUEST };
+		List<Member> existsMembers = MembersDAO.getInstance().getMembers(group.getId());
 
 		int offset = 0;
-		List<UserXtrRole> members = null;
+		List<UserXtrRole> vkMembers = null;
+
 		do {
-			members = vk.groups().getMembers(fields).groupId("38369814").offset(offset).execute().getItems();
-			for (UserXtrRole user : members) {
-				System.out.println(String.format("%10d (%10s) = %s %s", user.getId(), user.getBdate(), user.getFirstName(), user.getLastName()));
-			}
-			offset += members.size(); 
-		} while (members.size() == 1000);
+			GroupsGetMembersQueryWithFields request = vk.groups().getMembers(fields).groupId(Long.toString(group.getSnId())).offset(offset);
+			vkMembers = request.execute().getItems();
+			
+			vkMembers.parallelStream().forEach(vkUser -> {
+				try {
+					processUser(vkUser, group, existsMembers);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+
+			offset += vkMembers.size();
+		} while (vkMembers.size() == 1000);
+	}
+
+	private static void processUser(UserXtrRole vkUser, Group group, List<Member> existsMembers) throws SQLException, PropertyVetoException {
+		long joinTime = 1488629204L;// System.currentTimeMillis() / 1000;
+		User existsUser = UsersDAO.getInstance().get(vkUser.getId());
+		UUID newIserId = existsUser == null ? UsersDAO.getInstance().insert(toUser(vkUser)) : existsUser.getId();
+
+		if (existsMembers.stream().anyMatch(x -> x.getGroupId().equals(group.getId()) && x.getUserId().equals(newIserId)))
+			return;
+
+		Member newMember = new Member();
+		newMember.setGroupId(group.getId());
+		newMember.setUserId(newIserId);
+		newMember.setJoinTime(joinTime);
+
+		MembersDAO.getInstance().insert(newMember);
+	}
+
+	private static User toUser(UserXtrRole vkUser) {
+		User user = new User();
+		user.setSnId(vkUser.getId());
+		user.setFirstName(vkUser.getFirstName());
+		user.setLastName(vkUser.getLastName());
+		if (vkUser.getSex() != null)
+			user.setSex(vkUser.getSex().getValue());
+		else
+			user.setSex(0);
+		user.setBdate(vkUser.getBdate());
+		user.setRelation(vkUser.getRelation());
+		user.setPhoto50(vkUser.getPhoto50());
+		if (vkUser.getCountry() != null)
+			user.setCountryId(vkUser.getCountry().getId());
+		if (vkUser.getCity() != null)
+			user.setCityId(vkUser.getCity().getId());
+		user.setCanWritePrivateMessage(vkUser.canWritePrivateMessage());
+		user.setCanSendFriendRequest(vkUser.canSendFriendRequest());
+		return user;
 	}
 }
