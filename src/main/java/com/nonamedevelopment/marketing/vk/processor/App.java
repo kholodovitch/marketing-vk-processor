@@ -2,6 +2,7 @@ package com.nonamedevelopment.marketing.vk.processor;
 
 import java.beans.PropertyVetoException;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -9,6 +10,9 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.nonamedevelopment.marketing.vk.processor.datalayer.Group;
 import com.nonamedevelopment.marketing.vk.processor.datalayer.GroupsDAO;
@@ -28,6 +32,7 @@ import com.vk.api.sdk.queries.groups.GroupsGetMembersQueryWithFields;
 import com.vk.api.sdk.queries.users.UserField;
 
 public class App {
+	private static final Logger logger = LogManager.getLogger(App.class);
 	private static long joinTime;
 
 	public static void main(String[] args) throws ApiException, ClientException, SQLException, PropertyVetoException {
@@ -41,7 +46,7 @@ public class App {
 			try {
 				processGroup(vk, group);
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error(MessageFormat.format("Error on process group ({0}): {1}", group.getSnId(), e.getMessage()));
 			}
 		});
 	}
@@ -60,9 +65,8 @@ public class App {
 					GroupsGetMembersQueryWithFields request = vk.groups().getMembers(fields).groupId(Long.toString(group.getSnId())).offset(value * 1000);
 					return request.execute().getItems();
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error(MessageFormat.format("Error on request members from VK ({0} : {1}-{2}): {3}", group.getSnId(), (value * 1000), + ((value+1) * 1000), e.getMessage()));
 					return new ArrayList<UserXtrRole>();
-					//throw new RuntimeException(e);
 				}
 			}
 		};
@@ -73,8 +77,7 @@ public class App {
 				try {
 					processUser(vkUser, group, existsMembers);
 				} catch (Exception e) {
-					e.printStackTrace();
-					//throw new RuntimeException(e);
+					logger.error(MessageFormat.format("Error on process user ({0}): {1}", vkUser.getId(), e.getMessage()));
 				}
 			}
 		};
