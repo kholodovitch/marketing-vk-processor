@@ -32,11 +32,15 @@ import com.vk.api.sdk.queries.groups.GroupsGetMembersQueryWithFields;
 import com.vk.api.sdk.queries.users.UserField;
 
 public class App {
+	public static final AppSettings Settings = new AppSettings();
+
 	private static final Logger logger = LogManager.getLogger(App.class);
 	private static long joinTime;
 
 	public static void main(String[] args) throws ApiException, ClientException, SQLException, PropertyVetoException {
 		joinTime = System.currentTimeMillis() / 1000L;
+
+		AppSettingsManager.loadConfig();
 
 		TransportClient transportClient = HttpTransportClient.getInstance();
 		VkApiClient vk = new VkApiClient(transportClient);
@@ -49,6 +53,9 @@ public class App {
 				logger.error(MessageFormat.format("Error on process group ({0}): {1}", group.getSnId(), e.getMessage()));
 			}
 		});
+		long finishTime = System.currentTimeMillis() / 1000L;
+		long processingTime = finishTime - joinTime;
+		logger.info(MessageFormat.format("Processing time: {0} secs", Long.toString(processingTime)));
 	}
 
 	private static void processGroup(VkApiClient vk, Group group) throws SQLException, PropertyVetoException, ApiException, ClientException {
@@ -65,7 +72,7 @@ public class App {
 					GroupsGetMembersQueryWithFields request = vk.groups().getMembers(fields).groupId(Long.toString(group.getSnId())).offset(value * 1000);
 					return request.execute().getItems();
 				} catch (Exception e) {
-					logger.error(MessageFormat.format("Error on request members from VK ({0} : {1}-{2}): {3}", group.getSnId(), (value * 1000), + ((value+1) * 1000), e.getMessage()));
+					logger.error(MessageFormat.format("Error on request members from VK ({0} : {1}-{2}): {3}", group.getSnId(), (value * 1000), ((value + 1) * 1000), e.getMessage()));
 					return new ArrayList<UserXtrRole>();
 				}
 			}

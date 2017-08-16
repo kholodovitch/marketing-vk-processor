@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import com.nonamedevelopment.marketing.vk.processor.App;
 
 public class BaseConnector {
 	private static final Logger logger = LogManager.getLogger(BaseConnector.class);
@@ -45,7 +46,7 @@ public class BaseConnector {
 	private BaseConnector() throws PropertyVetoException {
 		dataSource = new ComboPooledDataSource();
 		dataSource.setDriverClass("com.mysql.jdbc.Driver");
-		dataSource.setJdbcUrl("jdbc:mysql://127.0.0.1/nndev_vkmarketing?user=dev&password=pass&characterEncoding=utf-8");
+		dataSource.setJdbcUrl(App.Settings.getDbJdbcConnectionString());
 		dataSource.setIdleConnectionTestPeriod(60);
 
 		dataSource.setInitialPoolSize(10);
