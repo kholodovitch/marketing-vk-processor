@@ -26,6 +26,7 @@
 			<version>0.4.3</version>
 		</dependency>
 
+		<!-- DB -->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
@@ -35,6 +36,13 @@
 			<groupId>com.mchange</groupId>
 			<artifactId>c3p0</artifactId>
 			<version>0.9.5.2</version>
+		</dependency>
+
+		<!-- Networking -->
+		<dependency>
+			<groupId>com.rabbitmq</groupId>
+			<artifactId>amqp-client</artifactId>
+			<version>3.6.0</version>
 		</dependency>
 
 		<!-- Logging -->
@@ -49,6 +57,7 @@
 			<version>2.3</version>
 		</dependency>
 
+		<!-- Testing -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

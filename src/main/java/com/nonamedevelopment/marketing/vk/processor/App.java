@@ -1,6 +1,7 @@
 package com.nonamedevelopment.marketing.vk.processor;
 
 import java.beans.PropertyVetoException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -37,10 +38,12 @@ public class App {
 	private static final Logger logger = LogManager.getLogger(App.class);
 	private static long joinTime;
 
-	public static void main(String[] args) throws ApiException, ClientException, SQLException, PropertyVetoException {
+	public static void main(String[] args) throws ApiException, ClientException, SQLException, PropertyVetoException, IOException {
 		joinTime = System.currentTimeMillis() / 1000L;
 
 		AppSettingsManager.loadConfig();
+		QueueManager.init();
+		QueueManager.send("123");
 
 		TransportClient transportClient = HttpTransportClient.getInstance();
 		VkApiClient vk = new VkApiClient(transportClient);

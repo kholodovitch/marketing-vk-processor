@@ -60,6 +60,10 @@ public class AppSettingsManager {
 		AppSettings settings = App.Settings;
 
 		settings.setDbJdbcConnectionString(prop.getProperty("db.jdbc.connectionString"));
+
+		settings.setRabbitActive(Boolean.parseBoolean(prop.getProperty("rabbit.active")));
+		settings.setRabbitHost(prop.getProperty("rabbit.host"));
+		settings.setRabbitQueuePrefix(prop.getProperty("rabbit.queue.prefix"));
 	}
 
 	private static String getAppConfigPath() {
