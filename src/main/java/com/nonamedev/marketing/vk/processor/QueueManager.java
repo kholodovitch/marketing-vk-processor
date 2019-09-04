@@ -24,17 +24,17 @@ public class QueueManager {
 	public static void init() {
 		initRabbit();
 	}
-	
+
 	public static void initRabbit() {
 		int errorCount = 0;
 
 		while (errorCount < CONNECT_ERRORS_MAX) {
 			try {
 				ConnectionFactory factory = new ConnectionFactory();
-				factory.setHost(App.Settings.getRabbitHost());
+				factory.setHost(MainApp.Settings.getRabbitHost());
 				factory.setAutomaticRecoveryEnabled(true);
 				Connection connection = factory.newConnection();
-				rabbitQueue = App.Settings.getRabbitQueuePrefix() + "groupMembers";
+				rabbitQueue = MainApp.Settings.getRabbitQueuePrefix() + "groupMembers";
 				rabbitChannel = connection.createChannel();
 				rabbitChannel.queueDeclare(rabbitQueue, true, false, false, null);
 				rabbitChannel.basicQos(4);
@@ -43,7 +43,8 @@ public class QueueManager {
 				logger.trace("Rabbit queue done");
 				return;
 			} catch (SocketException e) {
-				logger.error(MessageFormat.format("Error on init rabbit-connection [attempt #{0}] : {1}", errorCount, e.getMessage()));
+				logger.error(MessageFormat.format("Error on init rabbit-connection [attempt #{0}] : {1}", errorCount,
+						e.getMessage()));
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException e1) {
@@ -56,7 +57,8 @@ public class QueueManager {
 		}
 
 		if (errorCount >= CONNECT_ERRORS_MAX) {
-			throw new RuntimeException(MessageFormat.format("Error on init rabbit-connection after {0} attempts", CONNECT_ERRORS_MAX));
+			throw new RuntimeException(
+					MessageFormat.format("Error on init rabbit-connection after {0} attempts", CONNECT_ERRORS_MAX));
 		}
 	}
 

@@ -32,10 +32,10 @@ import com.vk.api.sdk.queries.groups.GroupField;
 import com.vk.api.sdk.queries.groups.GroupsGetMembersQueryWithFields;
 import com.vk.api.sdk.queries.users.UserField;
 
-public class App {
+public class MainApp {
 	public static final AppSettings Settings = new AppSettings();
 
-	private static final Logger logger = LogManager.getLogger(App.class);
+	private static final Logger logger = LogManager.getLogger(MainApp.class);
 	private static long joinTime;
 
 	public static void main(String[] args) throws ApiException, ClientException, SQLException, PropertyVetoException, IOException {

@@ -39,7 +39,7 @@ public class AppSettingsManager {
 
 	private static void loadDefaultConfig(Properties prop) {
 		String propFileName = "config.properties";
-		InputStream inputStream = App.class.getClassLoader().getResourceAsStream(propFileName);
+		InputStream inputStream = MainApp.class.getClassLoader().getResourceAsStream(propFileName);
 		if (inputStream == null) {
 			logger.error("property file '" + propFileName + "' not found in the classpath");
 			return;
@@ -57,7 +57,7 @@ public class AppSettingsManager {
 	}
 
 	private static void parseProperties(Properties prop) {
-		AppSettings settings = App.Settings;
+		AppSettings settings = MainApp.Settings;
 
 		settings.setDbJdbcConnectionString(prop.getProperty("db.jdbc.connectionString"));
 

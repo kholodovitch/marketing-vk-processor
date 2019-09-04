@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import com.nonamedev.marketing.vk.processor.App;
+import com.nonamedev.marketing.vk.processor.MainApp;
 
 public class BaseConnector {
 	private static final Logger logger = LogManager.getLogger(BaseConnector.class);
@@ -46,7 +46,7 @@ public class BaseConnector {
 	private BaseConnector() throws PropertyVetoException {
 		dataSource = new ComboPooledDataSource();
 		dataSource.setDriverClass("com.mysql.jdbc.Driver");
-		dataSource.setJdbcUrl(App.Settings.getDbJdbcConnectionString());
+		dataSource.setJdbcUrl(MainApp.Settings.getDbJdbcConnectionString());
 		dataSource.setIdleConnectionTestPeriod(60);
 
 		dataSource.setInitialPoolSize(10);
@@ -92,7 +92,8 @@ public class BaseConnector {
 		}
 	}
 
-	public <T> T processRequestAlone(Connection connect, String sql, SqlRequestCallback<T> callback) throws SQLException {
+	public <T> T processRequestAlone(Connection connect, String sql, SqlRequestCallback<T> callback)
+			throws SQLException {
 		List<T> list = processRequest(connect, sql, callback);
 		return list != null && list.size() > 0 ? list.get(0) : null;
 	}
@@ -108,7 +109,8 @@ public class BaseConnector {
 		}
 	}
 
-	public <T> List<T> processRequest(Connection connect, String sql, SqlRequestCallback<T> callback) throws SQLException {
+	public <T> List<T> processRequest(Connection connect, String sql, SqlRequestCallback<T> callback)
+			throws SQLException {
 		PreparedStatement statement = null;
 		ResultSet resultSet = null;
 		List<T> result = new ArrayList<T>();
