@@ -1,4 +1,4 @@
-package com.nonamedevelopment.marketing.vk.processor.datalayer;
+package com.nonamedev.marketing.vk.processor.datalayer;
 
 import java.beans.PropertyVetoException;
 import java.sql.Connection;
@@ -12,7 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
-import com.nonamedevelopment.marketing.vk.processor.App;
+import com.nonamedev.marketing.vk.processor.App;
 
 public class BaseConnector {
 	private static final Logger logger = LogManager.getLogger(BaseConnector.class);

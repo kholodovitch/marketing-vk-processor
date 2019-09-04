@@ -1,4 +1,4 @@
-package com.nonamedevelopment.marketing.vk.processor.datalayer;
+package com.nonamedev.marketing.vk.processor.datalayer;
 
 import java.beans.PropertyVetoException;
 import java.sql.PreparedStatement;
@@ -7,8 +7,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
-import com.nonamedevelopment.marketing.vk.processor.datalayer.BaseConnector.SqlRequestCallback;
-import com.nonamedevelopment.marketing.vk.processor.datalayer.BaseConnector.SqlUpdateCallback;
+import com.nonamedev.marketing.vk.processor.datalayer.BaseConnector.SqlRequestCallback;
+import com.nonamedev.marketing.vk.processor.datalayer.BaseConnector.SqlUpdateCallback;
 
 public class MembersDAO {
 	private static MembersDAO instance;

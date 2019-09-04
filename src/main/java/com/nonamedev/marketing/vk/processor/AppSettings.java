@@ -1,4 +1,4 @@
-package com.nonamedevelopment.marketing.vk.processor;
+package com.nonamedev.marketing.vk.processor;
 
 public class AppSettings {
 	private String dbJdbcConnectionString;

@@ -1,4 +1,4 @@
-package com.nonamedevelopment.marketing.vk.processor.datalayer;
+package com.nonamedev.marketing.vk.processor.datalayer;
 
 import java.util.UUID;
 

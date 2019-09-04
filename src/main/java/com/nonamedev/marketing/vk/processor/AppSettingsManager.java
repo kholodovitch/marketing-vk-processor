@@ -1,4 +1,4 @@
-package com.nonamedevelopment.marketing.vk.processor;
+package com.nonamedev.marketing.vk.processor;
 
 import java.io.File;
 import java.io.FileInputStream;

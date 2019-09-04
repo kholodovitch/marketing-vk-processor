@@ -1,4 +1,4 @@
-package com.nonamedevelopment.marketing.vk.processor;
+package com.nonamedev.marketing.vk.processor;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
@@ -15,12 +15,12 @@ import java.util.stream.IntStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.nonamedevelopment.marketing.vk.processor.datalayer.Group;
-import com.nonamedevelopment.marketing.vk.processor.datalayer.GroupsDAO;
-import com.nonamedevelopment.marketing.vk.processor.datalayer.Member;
-import com.nonamedevelopment.marketing.vk.processor.datalayer.MembersDAO;
-import com.nonamedevelopment.marketing.vk.processor.datalayer.User;
-import com.nonamedevelopment.marketing.vk.processor.datalayer.UsersDAO;
+import com.nonamedev.marketing.vk.processor.datalayer.Group;
+import com.nonamedev.marketing.vk.processor.datalayer.GroupsDAO;
+import com.nonamedev.marketing.vk.processor.datalayer.Member;
+import com.nonamedev.marketing.vk.processor.datalayer.MembersDAO;
+import com.nonamedev.marketing.vk.processor.datalayer.User;
+import com.nonamedev.marketing.vk.processor.datalayer.UsersDAO;
 import com.vk.api.sdk.client.TransportClient;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.exceptions.ApiException;

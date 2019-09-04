@@ -1,4 +1,4 @@
-package com.nonamedevelopment.marketing.vk.processor.executers;
+package com.nonamedev.marketing.vk.processor.executers;
 
 import java.io.IOException;
 

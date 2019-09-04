@@ -1,4 +1,4 @@
-package com.nonamedevelopment.marketing.vk.processor;
+package com.nonamedev.marketing.vk.processor;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -7,7 +7,7 @@ import java.text.MessageFormat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.nonamedevelopment.marketing.vk.processor.executers.GroupMembers;
+import com.nonamedev.marketing.vk.processor.executers.GroupMembers;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
