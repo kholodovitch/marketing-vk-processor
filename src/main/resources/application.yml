@@ -1,14 +1,16 @@
 spring:
    datasource:
-      url: ${DB_CONNECT}/${DB_NAME}
-      username: ${DB_USER}
-      password: ${DB_PASSWORD}
+      url: jdbc:mysql://127.0.0.1:3306/marketing_vk
+      username: root
+      password: pass
+      connectionProperties: useUnicode=true;characterEncoding=utf-8;
    jpa:
-      generate-ddl: false
+      generate-ddl: true
       hibernate:
-         ddl-auto: none
+         ddl-auto: create
       properties:
          hibernate:
+            dialect: org.hibernate.dialect.MySQL8Dialect
             temp:
                use_jdbc_metadata_defaults: false
    liquibase:
