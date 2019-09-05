@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 import com.nonamedev.marketing.vk.processor.datalayer.Group;
 import com.nonamedev.marketing.vk.processor.datalayer.GroupsDAO;
 import com.nonamedev.marketing.vk.processor.datalayer.Member;
+import com.nonamedev.marketing.vk.processor.datalayer.MemberIdentity;
 import com.nonamedev.marketing.vk.processor.datalayer.MembersDAO;
 import com.nonamedev.marketing.vk.processor.datalayer.User;
 import com.nonamedev.marketing.vk.processor.datalayer.UsersDAO;
@@ -106,12 +107,11 @@ public class MainApp {
 		User existsUser = UsersDAO.getInstance().get(vkUser.getId());
 		UUID newIserId = existsUser == null ? UsersDAO.getInstance().insert(toUser(vkUser)) : existsUser.getId();
 
-		if (existsMembers.stream().anyMatch(x -> x.getGroupId().equals(group.getId()) && x.getUserId().equals(newIserId)))
+		if (existsMembers.stream().anyMatch(x -> x.getMemberId().getGroupId().equals(group.getId()) && x.getMemberId().getUserId().equals(newIserId)))
 			return;
 
 		Member newMember = new Member();
-		newMember.setGroupId(group.getId());
-		newMember.setUserId(newIserId);
+		newMember.setMemberId(new MemberIdentity(group.getId(), newIserId));
 		newMember.setJoinTime(joinTime);
 
 		MembersDAO.getInstance().insert(newMember);

@@ -36,8 +36,7 @@ public class MembersDAO {
 			@Override
 			public Member process(ResultSet resultSet) throws SQLException {
 				Member member = new Member();
-				member.setGroupId(UUID.fromString(resultSet.getString("group_id")));
-				member.setUserId(UUID.fromString(resultSet.getString("user_id")));
+				member.setMemberId(new MemberIdentity(UUID.fromString(resultSet.getString("group_id")), UUID.fromString(resultSet.getString("user_id"))));
 				member.setJoinTime(resultSet.getLong("join_time"));
 				return member;
 			}
@@ -48,8 +47,8 @@ public class MembersDAO {
 		return connector.processUpdate("INSERT INTO sn_members (group_id, user_id, join_time) VALUES (?, ?, ?)", new SqlUpdateCallback() {
 			@Override
 			public void addParams(PreparedStatement statement) throws SQLException {
-				statement.setString(1, newMember.getGroupId().toString());
-				statement.setString(2, newMember.getUserId().toString());
+				statement.setString(1, newMember.getMemberId().getGroupId().toString());
+				statement.setString(2, newMember.getMemberId().getUserId().toString());
 				statement.setLong(3, newMember.getJoinTime());
 			}
 		}) > 0;
