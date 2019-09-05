@@ -59,8 +59,6 @@ public class AppSettingsManager {
 	private static void parseProperties(Properties prop) {
 		AppSettings settings = MainApp.Settings;
 
-		settings.setDbJdbcConnectionString(prop.getProperty("db.jdbc.connectionString"));
-
 		settings.setRabbitActive(Boolean.parseBoolean(prop.getProperty("rabbit.active")));
 		settings.setRabbitHost(prop.getProperty("rabbit.host"));
 		settings.setRabbitQueuePrefix(prop.getProperty("rabbit.queue.prefix"));

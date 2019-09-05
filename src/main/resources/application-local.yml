@@ -7,7 +7,6 @@ spring:
    jpa:
       properties:
          hibernate:
-            default_schema: fpm_product
             format_sql: true
    liquibase:
       change-log: classpath:db/liquibase-changelog-local.xml

@@ -29,7 +29,7 @@
 		<dependency>
 			<groupId>com.vk.api</groupId>
 			<artifactId>sdk</artifactId>
-			<version>0.4.3</version>
+			<version>0.5.12</version>
 		</dependency>
 
 		<!-- Spring -->
@@ -55,11 +55,6 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>8.0.17</version>
-		</dependency>
-		<dependency>
-			<groupId>com.mchange</groupId>
-			<artifactId>c3p0</artifactId>
-			<version>0.9.5.4</version>
 		</dependency>
 
 		<!-- Networking -->
