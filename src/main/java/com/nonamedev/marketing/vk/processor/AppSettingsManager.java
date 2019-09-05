@@ -1,4 +1,4 @@
-package com.nonamedevelopment.marketing.vk.processor;
+package com.nonamedev.marketing.vk.processor;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,7 +39,7 @@ public class AppSettingsManager {
 
 	private static void loadDefaultConfig(Properties prop) {
 		String propFileName = "config.properties";
-		InputStream inputStream = App.class.getClassLoader().getResourceAsStream(propFileName);
+		InputStream inputStream = MainApp.class.getClassLoader().getResourceAsStream(propFileName);
 		if (inputStream == null) {
 			logger.error("property file '" + propFileName + "' not found in the classpath");
 			return;
@@ -57,9 +57,7 @@ public class AppSettingsManager {
 	}
 
 	private static void parseProperties(Properties prop) {
-		AppSettings settings = App.Settings;
-
-		settings.setDbJdbcConnectionString(prop.getProperty("db.jdbc.connectionString"));
+		AppSettings settings = MainApp.Settings;
 
 		settings.setRabbitActive(Boolean.parseBoolean(prop.getProperty("rabbit.active")));
 		settings.setRabbitHost(prop.getProperty("rabbit.host"));
