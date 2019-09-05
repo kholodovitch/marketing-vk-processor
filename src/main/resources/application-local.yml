@@ -5,9 +5,6 @@ spring:
       password: pass
       connectionProperties: useUnicode=true;characterEncoding=utf-8;
    jpa:
-      generate-ddl: true
-      hibernate:
-         ddl-auto: create
       properties:
          hibernate:
             format_sql: true

@@ -1,7 +1,6 @@
 package com.nonamedev.marketing.vk.processor;
 
 import java.beans.PropertyVetoException;
-import java.io.IOException;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -14,14 +13,17 @@ import java.util.stream.IntStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.stereotype.Component;
 
 import com.nonamedev.marketing.vk.processor.datalayer.Group;
-import com.nonamedev.marketing.vk.processor.datalayer.GroupsDAO;
 import com.nonamedev.marketing.vk.processor.datalayer.Member;
 import com.nonamedev.marketing.vk.processor.datalayer.MemberIdentity;
 import com.nonamedev.marketing.vk.processor.datalayer.MembersDAO;
 import com.nonamedev.marketing.vk.processor.datalayer.User;
 import com.nonamedev.marketing.vk.processor.datalayer.UsersDAO;
+import com.nonamedev.marketing.vk.processor.repository.GroupRepository;
 import com.vk.api.sdk.client.TransportClient;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.exceptions.ApiException;
@@ -33,23 +35,31 @@ import com.vk.api.sdk.queries.groups.GroupField;
 import com.vk.api.sdk.queries.groups.GroupsGetMembersQueryWithFields;
 import com.vk.api.sdk.queries.users.UserField;
 
-public class MainApp {
+import lombok.RequiredArgsConstructor;
+
+@Component
+@RequiredArgsConstructor
+public class MainApp implements ApplicationRunner {
 	public static final AppSettings Settings = new AppSettings();
 
-	private static final Logger logger = LogManager.getLogger(MainApp.class);
-	private static long joinTime;
+	private final Logger logger = LogManager.getLogger(MainApp.class);
+	private long joinTime;
 
-	public static void main(String[] args) throws ApiException, ClientException, SQLException, PropertyVetoException, IOException {
+    private final GroupRepository groupRepo;
+
+	public void run(ApplicationArguments args) throws Exception {
 		joinTime = System.currentTimeMillis() / 1000L;
 
 		AppSettingsManager.loadConfig();
+		/*
 		QueueManager.init();
 		QueueManager.send("123");
+		*/
 
 		TransportClient transportClient = HttpTransportClient.getInstance();
 		VkApiClient vk = new VkApiClient(transportClient);
 
-		List<Group> groups = GroupsDAO.getInstance().getGroups();
+		List<Group> groups = groupRepo.findAll();
 		groups.parallelStream().forEach(group -> {
 			try {
 				processGroup(vk, group);
@@ -62,7 +72,7 @@ public class MainApp {
 		logger.info(MessageFormat.format("Processing time: {0} secs", Long.toString(processingTime)));
 	}
 
-	private static void processGroup(VkApiClient vk, Group group) throws SQLException, PropertyVetoException, ApiException, ClientException {
+	private void processGroup(VkApiClient vk, Group group) throws SQLException, PropertyVetoException, ApiException, ClientException {
 		List<GroupFull> vkGroups = vk.groups().getById().groupId(Long.toString(group.getSnId())).fields(GroupField.MEMBERS_COUNT).execute();
 		if (vkGroups.size() == 0)
 			return;
@@ -103,7 +113,7 @@ public class MainApp {
 		vkMembers.parallelStream().forEach(action);
 	}
 
-	private static void processUser(UserXtrRole vkUser, Group group, List<Member> existsMembers) throws SQLException, PropertyVetoException {
+	private void processUser(UserXtrRole vkUser, Group group, List<Member> existsMembers) throws SQLException, PropertyVetoException {
 		User existsUser = UsersDAO.getInstance().get(vkUser.getId());
 		UUID newIserId = existsUser == null ? UsersDAO.getInstance().insert(toUser(vkUser)) : existsUser.getId();
 
@@ -117,7 +127,7 @@ public class MainApp {
 		MembersDAO.getInstance().insert(newMember);
 	}
 
-	private static User toUser(UserXtrRole vkUser) {
+	private User toUser(UserXtrRole vkUser) {
 		User user = new User();
 		user.setSnId(vkUser.getId());
 		user.setFirstName(vkUser.getFirstName());
