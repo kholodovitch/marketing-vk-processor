@@ -26,6 +26,7 @@ import com.nonamedev.marketing.vk.processor.datalayer.UsersDAO;
 import com.nonamedev.marketing.vk.processor.repository.GroupRepository;
 import com.vk.api.sdk.client.TransportClient;
 import com.vk.api.sdk.client.VkApiClient;
+import com.vk.api.sdk.client.actors.ServiceActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
@@ -73,7 +74,8 @@ public class MainApp implements ApplicationRunner {
 	}
 
 	private void processGroup(VkApiClient vk, Group group) throws SQLException, PropertyVetoException, ApiException, ClientException {
-		List<GroupFull> vkGroups = vk.groups().getById().groupId(Long.toString(group.getSnId())).fields(GroupField.MEMBERS_COUNT).execute();
+		ServiceActor seerviceAction = new ServiceActor(5374209, "aaff4d61aaff4d61aa467e5f32aaad4c60aaaffaaff4d61f24f0d6070dc421ee47c7010");
+		List<GroupFull> vkGroups = vk.groups().getById(seerviceAction).groupId(Long.toString(group.getSnId())).fields(GroupField.MEMBERS_COUNT).execute();
 		if (vkGroups.size() == 0)
 			return;
 
@@ -83,7 +85,7 @@ public class MainApp implements ApplicationRunner {
 			@Override
 			public List<UserXtrRole> apply(int value) {
 				try {
-					GroupsGetMembersQueryWithFields request = vk.groups().getMembers(fields).groupId(Long.toString(group.getSnId())).offset(value * 1000);
+					GroupsGetMembersQueryWithFields request = vk.groups().getMembers(seerviceAction, fields).groupId(Long.toString(group.getSnId())).offset(value * 1000);
 					return request.execute().getItems();
 				} catch (Exception e) {
 					logger.error(MessageFormat.format("Error on request members from VK ({0} : {1}-{2}): {3}", group.getSnId(), (value * 1000), ((value + 1) * 1000), e.getMessage()));
