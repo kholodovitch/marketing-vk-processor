@@ -1,18 +1,9 @@
 package com.nonamedev.marketing.vk.processor;
 
 public class AppSettings {
-	private String dbJdbcConnectionString;
 	private boolean rabbitActive;
 	private String rabbitHost;
 	private String rabbitQueuePrefix;
-
-	public String getDbJdbcConnectionString() {
-		return dbJdbcConnectionString;
-	}
-
-	public void setDbJdbcConnectionString(String dbJdbcConnectionString) {
-		this.dbJdbcConnectionString = dbJdbcConnectionString;
-	}
 
 	public boolean getRabbitActive() {
 		return rabbitActive;

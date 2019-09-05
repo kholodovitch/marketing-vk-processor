@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
@@ -20,10 +21,10 @@ import org.springframework.stereotype.Component;
 import com.nonamedev.marketing.vk.processor.datalayer.Group;
 import com.nonamedev.marketing.vk.processor.datalayer.Member;
 import com.nonamedev.marketing.vk.processor.datalayer.MemberIdentity;
-import com.nonamedev.marketing.vk.processor.datalayer.MembersDAO;
 import com.nonamedev.marketing.vk.processor.datalayer.User;
-import com.nonamedev.marketing.vk.processor.datalayer.UsersDAO;
 import com.nonamedev.marketing.vk.processor.repository.GroupRepository;
+import com.nonamedev.marketing.vk.processor.repository.MemberRepository;
+import com.nonamedev.marketing.vk.processor.repository.UserRepository;
 import com.vk.api.sdk.client.TransportClient;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.ServiceActor;
@@ -47,6 +48,8 @@ public class MainApp implements ApplicationRunner {
 	private long joinTime;
 
     private final GroupRepository groupRepo;
+    private final UserRepository userRepo;
+    private final MemberRepository memberRepo;
 
 	public void run(ApplicationArguments args) throws Exception {
 		joinTime = System.currentTimeMillis() / 1000L;
@@ -55,6 +58,16 @@ public class MainApp implements ApplicationRunner {
 		/*
 		QueueManager.init();
 		QueueManager.send("123");
+		*/
+		
+		/*
+		Group groupNew = Group.builder()
+				.id(UUID.randomUUID())
+				.caption("ArtPlatinum Show - огненное и световое шоу")
+				.snId(82781623)
+				.snName("art_platinumshow")
+				.build();
+		groupRepo.saveAndFlush(groupNew);
 		*/
 
 		TransportClient transportClient = HttpTransportClient.getInstance();
@@ -79,7 +92,7 @@ public class MainApp implements ApplicationRunner {
 		if (vkGroups.size() == 0)
 			return;
 
-		List<Member> existsMembers = MembersDAO.getInstance().getMembers(group.getId());
+		List<Member> existsMembers = memberRepo.findAllByMemberIdGroupId(group.getId());
 		UserField[] fields = new UserField[] { UserField.SEX, UserField.BDATE, UserField.RELATION, UserField.PHOTO_50, UserField.COUNTRY, UserField.CITY, UserField.CAN_WRITE_PRIVATE_MESSAGE, UserField.CAN_SEND_FRIEND_REQUEST };
 		IntFunction<List<UserXtrRole>> mapper = new IntFunction<List<UserXtrRole>>() {
 			@Override
@@ -116,8 +129,8 @@ public class MainApp implements ApplicationRunner {
 	}
 
 	private void processUser(UserXtrRole vkUser, Group group, List<Member> existsMembers) throws SQLException, PropertyVetoException {
-		User existsUser = UsersDAO.getInstance().get(vkUser.getId());
-		UUID newIserId = existsUser == null ? UsersDAO.getInstance().insert(toUser(vkUser)) : existsUser.getId();
+		Optional<User> existsUser = userRepo.findBySnId(vkUser.getId());
+		UUID newIserId = !existsUser.isPresent() ? userRepo.saveAndFlush(toUser(vkUser)).getId() : existsUser.get().getId();
 
 		if (existsMembers.stream().anyMatch(x -> x.getMemberId().getGroupId().equals(group.getId()) && x.getMemberId().getUserId().equals(newIserId)))
 			return;
@@ -126,11 +139,13 @@ public class MainApp implements ApplicationRunner {
 		newMember.setMemberId(new MemberIdentity(group.getId(), newIserId));
 		newMember.setJoinTime(joinTime);
 
-		MembersDAO.getInstance().insert(newMember);
+		memberRepo.saveAndFlush(newMember);
 	}
 
 	private User toUser(UserXtrRole vkUser) {
+		final UUID newId = UUID.randomUUID();
 		User user = new User();
+		user.setId(newId);
 		user.setSnId(vkUser.getId());
 		user.setFirstName(vkUser.getFirstName());
 		user.setLastName(vkUser.getLastName());
