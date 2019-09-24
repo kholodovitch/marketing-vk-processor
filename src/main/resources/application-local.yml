@@ -10,6 +10,9 @@ spring:
             format_sql: true
    liquibase:
       change-log: classpath:db/liquibase-changelog-local.xml
+      default-schema: marketing_vk
+      parameters:
+         default-schema-prefix: marketing_vk
 
 logging:
    level:
