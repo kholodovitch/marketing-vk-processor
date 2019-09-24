@@ -11,8 +11,9 @@ spring:
    liquibase:
       change-log: classpath:db/liquibase-changelog-local.xml
       default-schema: marketing_vk
+      liquibase-schema: sys
       parameters:
-         default-schema-prefix: marketing_vk
+         default-schema-prefix: ${spring.liquibase.default-schema}
 
 logging:
    level:

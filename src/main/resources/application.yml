@@ -15,5 +15,7 @@ spring:
                use_jdbc_metadata_defaults: false
    liquibase:
       change-log: classpath:db/liquibase-changelog.xml
+      database-change-log-table: marketing-vk-change-log-table
+      database-change-log-lock-table: marketing-vk-change-lock-table
       parameters:
-         default-schema-prefix: ${spring.liquibase.default-schema}
+         default-schema-prefix: null
