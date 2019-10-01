@@ -1,5 +1,6 @@
 package com.nonamedev.marketing.vk.processor.services;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,7 @@ import com.nonamedev.marketing.vk.processor.datalayer.Member;
 import com.nonamedev.marketing.vk.processor.repository.MemberRepository;
 import com.nonamedev.marketing.vk.processor.service.QueueService;
 import com.nonamedev.marketing.vk.processor.tasks.GroupTask;
+import com.nonamedev.marketing.vk.processor.tasks.UserTask;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Consumer;
 import com.vk.api.sdk.client.TransportClient;
@@ -30,13 +32,15 @@ import com.vk.api.sdk.queries.users.UserField;
 @Service
 public class GroupProcessingService extends QueueService<GroupTask> {
 
+	private final UserProcessingService userProcessingService;
 	private final MemberRepository memberRepo;
     private final VkApiClient vk;
 	private final Logger logger;
 
-	public GroupProcessingService(MemberRepository memberRepo) {
+	public GroupProcessingService(UserProcessingService userProcessingService, MemberRepository memberRepo) {
 		super(GroupTask.class);
 
+		this.userProcessingService = userProcessingService;
 		this.memberRepo = memberRepo;
 		TransportClient transportClient = HttpTransportClient.getInstance();
 		vk = new VkApiClient(transportClient);
@@ -75,19 +79,6 @@ public class GroupProcessingService extends QueueService<GroupTask> {
 			}
 		};
 
-		/*
-		Consumer<UserXtrRole> action = new Consumer<UserXtrRole>() {
-			@Override
-			public void accept(UserXtrRole vkUser) {
-				try {
-					processUser(vkUser, group, existsMembers);
-				} catch (Exception e) {
-					logger.error(MessageFormat.format("Error on process user ({0}): {1}", vkUser.getId(), e.getMessage()));
-				}
-			}
-		};
-		*/
-
 		List<UserXtrRole> vkMembers = IntStream
 			.rangeClosed(0, vkGroups.get(0).getMembersCount() / 1000)
 			.parallel()
@@ -95,7 +86,23 @@ public class GroupProcessingService extends QueueService<GroupTask> {
 			.flatMap(List::stream)
 			.collect(Collectors.toList());
 
-		//vkMembers.parallelStream().forEach(action);
+		vkMembers.parallelStream().forEach(vkUser -> {
+			try {
+				processUser(vkUser, group, existsMembers);
+			} catch (Exception e) {
+				logger.error(MessageFormat.format("Error on process user ({0}): {1}", vkUser.getId(), e.getMessage()));
+			}
+		});
+	}
+	
+	private void processUser(UserXtrRole snUser, GroupTask group, List<Member> existsMembers) throws IOException {
+		UserTask userTask = UserTask
+				.builder()
+				.snUser(snUser)
+				.groupId(group.getId())
+				.members(existsMembers)
+				.build();
+		userProcessingService.send(userTask);
 	}
 
     public class Executor extends QueueService.Executor<GroupTask> {

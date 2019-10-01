@@ -2,8 +2,6 @@ package com.nonamedev.marketing.vk.processor.tasks;
 
 import java.util.UUID;
 
-import com.nonamedev.marketing.vk.processor.datalayer.Group;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

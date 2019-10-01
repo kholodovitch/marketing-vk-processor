@@ -48,7 +48,6 @@ public class MainApp implements ApplicationRunner {
 	private long joinTime;
 
     private final GroupRepository groupRepo;
-    private final UserRepository userRepo;
     private final MemberRepository memberRepo;
 
 	public void run(ApplicationArguments args) throws Exception {
@@ -88,42 +87,5 @@ public class MainApp implements ApplicationRunner {
 
 	private void processGroup(VkApiClient vk, Group group) throws SQLException, PropertyVetoException, ApiException, ClientException {
 
-	}
-
-	private void processUser(UserXtrRole vkUser, Group group, List<Member> existsMembers) throws SQLException, PropertyVetoException {
-		Optional<User> existsUser = userRepo.findBySnId(vkUser.getId());
-		UUID newIserId = !existsUser.isPresent() ? userRepo.saveAndFlush(toUser(vkUser)).getId() : existsUser.get().getId();
-
-		if (existsMembers.stream().anyMatch(x -> x.getMemberId().getGroupId().equals(group.getId()) && x.getMemberId().getUserId().equals(newIserId)))
-			return;
-
-		Member newMember = new Member();
-		newMember.setMemberId(new MemberIdentity(group.getId(), newIserId));
-		newMember.setJoinTime(joinTime);
-
-		memberRepo.saveAndFlush(newMember);
-	}
-
-	private User toUser(UserXtrRole vkUser) {
-		final UUID newId = UUID.randomUUID();
-		User user = new User();
-		user.setId(newId);
-		user.setSnId(vkUser.getId());
-		user.setFirstName(vkUser.getFirstName());
-		user.setLastName(vkUser.getLastName());
-		if (vkUser.getSex() != null)
-			user.setSex(vkUser.getSex().getValue());
-		else
-			user.setSex(0);
-		user.setBdate(vkUser.getBdate());
-		user.setRelation(vkUser.getRelation());
-		user.setPhoto50(vkUser.getPhoto50());
-		if (vkUser.getCountry() != null)
-			user.setCountryId(vkUser.getCountry().getId());
-		if (vkUser.getCity() != null)
-			user.setCityId(vkUser.getCity().getId());
-		user.setCanWritePrivateMessage(vkUser.canWritePrivateMessage());
-		user.setCanSendFriendRequest(vkUser.canSendFriendRequest());
-		return user;
 	}
 }

@@ -95,8 +95,8 @@ public abstract class QueueService<T> {
 		}
 	}
 
-	public void send(String msg) throws IOException {
-		rabbitChannel.basicPublish("", rabbitQueue, MessageProperties.PERSISTENT_TEXT_PLAIN, msg.getBytes());
+	public void send(T msg) throws IOException {
+		rabbitChannel.basicPublish("", rabbitQueue, MessageProperties.PERSISTENT_TEXT_PLAIN, new Gson().toJson(msg).getBytes());
 	}
 
 	protected abstract Consumer getExecutor(Channel channel);
