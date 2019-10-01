@@ -87,45 +87,7 @@ public class MainApp implements ApplicationRunner {
 	}
 
 	private void processGroup(VkApiClient vk, Group group) throws SQLException, PropertyVetoException, ApiException, ClientException {
-		ServiceActor seerviceAction = new ServiceActor(5374209, "aaff4d61aaff4d61aa467e5f32aaad4c60aaaffaaff4d61f24f0d6070dc421ee47c7010");
-		List<GroupFull> vkGroups = vk.groups().getById(seerviceAction).groupId(Long.toString(group.getSnId())).fields(GroupField.MEMBERS_COUNT).execute();
-		if (vkGroups.size() == 0)
-			return;
 
-		List<Member> existsMembers = memberRepo.findAllByMemberIdGroupId(group.getId());
-		UserField[] fields = new UserField[] { UserField.SEX, UserField.BDATE, UserField.RELATION, UserField.PHOTO_50, UserField.COUNTRY, UserField.CITY, UserField.CAN_WRITE_PRIVATE_MESSAGE, UserField.CAN_SEND_FRIEND_REQUEST };
-		IntFunction<List<UserXtrRole>> mapper = new IntFunction<List<UserXtrRole>>() {
-			@Override
-			public List<UserXtrRole> apply(int value) {
-				try {
-					GroupsGetMembersQueryWithFields request = vk.groups().getMembers(seerviceAction, fields).groupId(Long.toString(group.getSnId())).offset(value * 1000);
-					return request.execute().getItems();
-				} catch (Exception e) {
-					logger.error(MessageFormat.format("Error on request members from VK ({0} : {1}-{2}): {3}", group.getSnId(), (value * 1000), ((value + 1) * 1000), e.getMessage()));
-					return new ArrayList<UserXtrRole>();
-				}
-			}
-		};
-
-		Consumer<UserXtrRole> action = new Consumer<UserXtrRole>() {
-			@Override
-			public void accept(UserXtrRole vkUser) {
-				try {
-					processUser(vkUser, group, existsMembers);
-				} catch (Exception e) {
-					logger.error(MessageFormat.format("Error on process user ({0}): {1}", vkUser.getId(), e.getMessage()));
-				}
-			}
-		};
-
-		List<UserXtrRole> vkMembers = IntStream
-			.rangeClosed(0, vkGroups.get(0).getMembersCount() / 1000)
-			.parallel()
-			.mapToObj(mapper)
-			.flatMap(List::stream)
-			.collect(Collectors.toList());
-
-		vkMembers.parallelStream().forEach(action);
 	}
 
 	private void processUser(UserXtrRole vkUser, Group group, List<Member> existsMembers) throws SQLException, PropertyVetoException {

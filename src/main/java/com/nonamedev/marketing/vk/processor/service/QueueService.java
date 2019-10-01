@@ -18,19 +18,44 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.MessageProperties;
 
-public abstract class QueueService<T> extends DefaultConsumer {
+public abstract class QueueService<T> {
+
+	public static abstract class Executor<T> extends DefaultConsumer {
+
+		private final Class<T> typeParameterClass;
+		private final QueueService<T> service;
+		private final Logger logger;
+
+		public Executor(Class<T> typeParameterClass, QueueService<T> service, Channel channel) {
+			super(channel);
+			this.typeParameterClass = typeParameterClass;
+			this.service = service;
+			this.logger = LogManager.getLogger(Executor.class);
+		}
+
+		@Override
+		public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
+				throws IOException {
+			String message = new String(body, "UTF-8");
+			logger.trace(message);
+
+			try {
+				service.processTask(new Gson().fromJson(message, typeParameterClass));
+			} catch (Throwable e) {
+				logger.catching(e);
+			} finally {
+				getChannel().basicAck(envelope.getDeliveryTag(), false);
+			}
+		}
+
+	}
 
 	private final int CONNECT_ERRORS_MAX = 3;
-	private final Logger logger;
 
 	private String rabbitQueue;
 	private Channel rabbitChannel;
-	private Class<T> typeParameterClass;
 
-	public QueueService(Class<T> typeParameterClass, Channel channel) {
-		super(channel);
-		this.typeParameterClass = typeParameterClass;
-		this.logger = LogManager.getLogger(typeParameterClass);
+	public QueueService(Class<T> typeParameterClass) {
 		initRabbit();
 	}
 
@@ -47,20 +72,19 @@ public abstract class QueueService<T> extends DefaultConsumer {
 				rabbitChannel = connection.createChannel();
 				rabbitChannel.queueDeclare(rabbitQueue, true, false, false, null);
 				rabbitChannel.basicQos(4);
-				logger.trace("Rabbit queue starting...");
+				//logger.trace("Rabbit queue starting...");
 				rabbitChannel.basicConsume(rabbitQueue, false, getExecutor(rabbitChannel));
-				logger.trace("Rabbit queue done");
+				//logger.trace("Rabbit queue done");
 				return;
 			} catch (SocketException e) {
-				logger.error(MessageFormat.format("Error on init rabbit-connection [attempt #{0}] : {1}", errorCount,
-						e.getMessage()));
+				//logger.error(MessageFormat.format("Error on init rabbit-connection [attempt #{0}] : {1}", errorCount, e.getMessage()));
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException e1) {
 				}
 				errorCount++;
 			} catch (Throwable e) {
-				logger.fatal("Error on init rabbit-connection", e);
+				//logger.fatal("Error on init rabbit-connection", e);
 				throw new RuntimeException(e);
 			}
 		}
@@ -75,24 +99,9 @@ public abstract class QueueService<T> extends DefaultConsumer {
 		rabbitChannel.basicPublish("", rabbitQueue, MessageProperties.PERSISTENT_TEXT_PLAIN, msg.getBytes());
 	}
 
-	@Override
-	public void handleDelivery(String consumerTag, Envelope envelope, AMQP.BasicProperties properties, byte[] body)
-			throws IOException {
-		String message = new String(body, "UTF-8");
-		logger.trace(message);
+	protected abstract Consumer getExecutor(Channel channel);
 
-		try {
-			processTask(new Gson().fromJson(message, typeParameterClass));
-		} catch (Throwable e) {
-			logger.catching(e);
-		} finally {
-			getChannel().basicAck(envelope.getDeliveryTag(), false);
-		}
-	}
-
-	protected abstract void processTask(T message);
-
-	protected abstract Consumer getExecutor(Channel rabbitChannel2);
+	protected abstract void processTask(T message) throws Exception;
 
 	protected abstract String getQueueName();
 }
