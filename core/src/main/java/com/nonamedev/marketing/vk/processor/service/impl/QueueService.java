@@ -1,4 +1,4 @@
-package com.nonamedev.marketing.vk.processor.services;
+package com.nonamedev.marketing.vk.processor.service.impl;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -98,8 +98,12 @@ public abstract class QueueService<T> {
 		}
 	}
 
-	public void send(T msg) throws IOException {
-		rabbitChannel.basicPublish("", rabbitQueue, MessageProperties.PERSISTENT_TEXT_PLAIN, new Gson().toJson(msg).getBytes());
+	public void send(T msg) {
+		try {
+			rabbitChannel.basicPublish("", rabbitQueue, MessageProperties.PERSISTENT_TEXT_PLAIN, new Gson().toJson(msg).getBytes());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	protected abstract Consumer getExecutor(Channel channel);

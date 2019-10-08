@@ -1,4 +1,4 @@
-package com.nonamedev.marketing.vk.processor.services;
+package com.nonamedev.marketing.vk.processor.service.impl;
 
 import java.util.Optional;
 import java.util.UUID;

@@ -1,4 +1,4 @@
-package com.nonamedev.marketing.vk.processor.services;
+package com.nonamedev.marketing.vk.processor.service.impl;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -7,7 +7,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.nonamedev.marketing.vk.processor.config.Config;
@@ -24,21 +23,22 @@ import com.vk.api.sdk.queries.groups.GroupField;
 import com.vk.api.sdk.queries.groups.GroupsGetMembersQueryWithFields;
 import com.vk.api.sdk.queries.users.UserField;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class GroupProcessingService extends QueueService<GroupTask> {
 
 	private final UserProcessingService userProcessingService;
 	private final MemberRepository memberRepo;
 	private final VkClientService vk;
-	private final Logger logger;
 
-	public GroupProcessingService(UserProcessingService userProcessingService, MemberRepository memberRepo, VkClientService vk, Logger logger, Config config) {
+	public GroupProcessingService(UserProcessingService userProcessingService, MemberRepository memberRepo, VkClientService vk, Config config) {
 		super(config);
 
 		this.userProcessingService = userProcessingService;
 		this.memberRepo = memberRepo;
 		this.vk = vk;
-		this.logger = logger;
 	}
 
 	@Override
@@ -88,7 +88,7 @@ public class GroupProcessingService extends QueueService<GroupTask> {
 					.build();
 			userProcessingService.send(userTask);
 		} catch (Exception e) {
-			logger.error(MessageFormat.format("Error on process user ({0}): {1}", vkUser.getId(), e.getMessage()));
+			log.error(MessageFormat.format("Error on process user ({0}): {1}", vkUser.getId(), e.getMessage()));
 		}
 	}
 
@@ -106,7 +106,7 @@ public class GroupProcessingService extends QueueService<GroupTask> {
 		} catch (Exception e) {
 			String exFormat = "Error on request members from VK ({0} : {1}-{2}): {3}";
 			String exMsg = MessageFormat.format(exFormat, groupSnId, (usersPageIndex * 1000), ((usersPageIndex + 1) * 1000), e.getMessage());
-			logger.error(exMsg);
+			log.error(exMsg);
 			return new ArrayList<UserXtrRole>();
 		}
 	}
