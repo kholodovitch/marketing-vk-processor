@@ -1,10 +1,9 @@
 package com.nonamedev.marketing.vk.processor.services;
 
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.IntFunction;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -34,7 +33,7 @@ public class GroupProcessingService extends QueueService<GroupTask> {
 
 	private final UserProcessingService userProcessingService;
 	private final MemberRepository memberRepo;
-    private final VkApiClient vk;
+	private final VkApiClient vk;
 	private final Logger logger;
 
 	public GroupProcessingService(UserProcessingService userProcessingService, MemberRepository memberRepo) {
@@ -59,58 +58,74 @@ public class GroupProcessingService extends QueueService<GroupTask> {
 
 	@Override
 	protected void processTask(GroupTask group) throws Exception {
-		ServiceActor seerviceAction = new ServiceActor(5374209, "aaff4d61aaff4d61aa467e5f32aaad4c60aaaffaaff4d61f24f0d6070dc421ee47c7010");
-		List<GroupFull> vkGroups = vk.groups().getById(seerviceAction).groupId(Long.toString(group.getSnId())).fields(GroupField.MEMBERS_COUNT).execute();
+		ServiceActor serviceAction = getServiceActor();
+		List<GroupFull> vkGroups = vk
+				.groups()
+				.getById(serviceAction)
+				.groupId(Long.toString(group.getSnId()))
+				.fields(GroupField.MEMBERS_COUNT)
+				.execute();
 		if (vkGroups.size() == 0)
 			return;
 
 		List<Member> existsMembers = memberRepo.findAllByMemberIdGroupId(group.getId());
-		UserField[] fields = new UserField[] { UserField.SEX, UserField.BDATE, UserField.RELATION, UserField.PHOTO_50, UserField.COUNTRY, UserField.CITY, UserField.CAN_WRITE_PRIVATE_MESSAGE, UserField.CAN_SEND_FRIEND_REQUEST };
-		IntFunction<List<UserXtrRole>> mapper = new IntFunction<List<UserXtrRole>>() {
-			@Override
-			public List<UserXtrRole> apply(int value) {
-				try {
-					GroupsGetMembersQueryWithFields request = vk.groups().getMembers(seerviceAction, fields).groupId(Long.toString(group.getSnId())).offset(value * 1000);
-					return request.execute().getItems();
-				} catch (Exception e) {
-					logger.error(MessageFormat.format("Error on request members from VK ({0} : {1}-{2}): {3}", group.getSnId(), (value * 1000), ((value + 1) * 1000), e.getMessage()));
-					return new ArrayList<UserXtrRole>();
-				}
-			}
-		};
-
 		List<UserXtrRole> vkMembers = IntStream
-			.rangeClosed(0, vkGroups.get(0).getMembersCount() / 1000)
-			.parallel()
-			.mapToObj(mapper)
-			.flatMap(List::stream)
-			.collect(Collectors.toList());
+				.rangeClosed(0, vkGroups.get(0).getMembersCount() / 1000)
+				.parallel()
+				.mapToObj(x -> getGroupUsers(group.getSnId(), x))
+				.flatMap(List::stream)
+				.collect(Collectors.toList());
 
-		vkMembers.parallelStream().forEach(vkUser -> {
-			try {
-				processUser(vkUser, group, existsMembers);
-			} catch (Exception e) {
-				logger.error(MessageFormat.format("Error on process user ({0}): {1}", vkUser.getId(), e.getMessage()));
-			}
-		});
-	}
-	
-	private void processUser(UserXtrRole snUser, GroupTask group, List<Member> existsMembers) throws IOException {
-		UserTask userTask = UserTask
-				.builder()
-				.snUser(snUser)
-				.groupId(group.getId())
-				.members(existsMembers)
-				.build();
-		userProcessingService.send(userTask);
+		vkMembers
+				.parallelStream()
+				.forEach(vkUser -> {
+					processUser(group.getId(), existsMembers, vkUser);
+				});
 	}
 
-    public class Executor extends QueueService.Executor<GroupTask> {
+	private void processUser(UUID groupId, List<Member> existsMembers, UserXtrRole vkUser) {
+		try {
+			UserTask userTask = UserTask
+					.builder()
+					.snUser(vkUser)
+					.groupId(groupId)
+					.members(existsMembers)
+					.build();
+			userProcessingService.send(userTask);
+		} catch (Exception e) {
+			logger.error(MessageFormat.format("Error on process user ({0}): {1}", vkUser.getId(), e.getMessage()));
+		}
+	}
+
+	public List<UserXtrRole> getGroupUsers(long groupSnId, int usersPageIndex) {
+		try {
+			UserField[] fields = new UserField[] { UserField.SEX, UserField.BDATE, UserField.RELATION, UserField.PHOTO_50, UserField.COUNTRY, UserField.CITY,
+					UserField.CAN_WRITE_PRIVATE_MESSAGE, UserField.CAN_SEND_FRIEND_REQUEST };
+
+			GroupsGetMembersQueryWithFields request = vk
+					.groups()
+					.getMembers(getServiceActor(), fields)
+					.groupId(Long.toString(groupSnId))
+					.offset(usersPageIndex * 1000);
+			return request.execute().getItems();
+		} catch (Exception e) {
+			String exFormat = "Error on request members from VK ({0} : {1}-{2}): {3}";
+			String exMsg = MessageFormat.format(exFormat, groupSnId, (usersPageIndex * 1000), ((usersPageIndex + 1) * 1000), e.getMessage());
+			logger.error(exMsg);
+			return new ArrayList<UserXtrRole>();
+		}
+	}
+
+	private ServiceActor getServiceActor() {
+		return new ServiceActor(5374209, "aaff4d61aaff4d61aa467e5f32aaad4c60aaaffaaff4d61f24f0d6070dc421ee47c7010");
+	}
+
+	public class Executor extends QueueService.Executor<GroupTask> {
 
 		public Executor(Class<GroupTask> typeParameterClass, Channel channel) {
 			super(typeParameterClass, GroupProcessingService.this, channel);
 		}
-	
+
 	}
 
 }
