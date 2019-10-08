@@ -1,9 +1,6 @@
 package com.nonamedev.marketing.vk.processor.datalayer;
 
-import java.util.UUID;
-
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -21,9 +18,7 @@ import lombok.NoArgsConstructor;
 public class Group {
 
 	@Id
-	@GeneratedValue
-	private UUID id;
-	private long snId;
+	private long id;
 	private String snName;
 	private String caption;
 

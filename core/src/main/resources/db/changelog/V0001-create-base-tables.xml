@@ -8,22 +8,19 @@
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
 	<changeSet author="generated" id="1569361685633-1">
 		<createTable tableName="vk_group">
-			<column name="id" type="BINARY(255)">
+			<column name="id" type="BIGINT">
 				<constraints primaryKey="true" />
 			</column>
-			<column name="caption" type="VARCHAR(255)" />
-			<column name="sn_id" type="BIGINT">
-				<constraints nullable="false" />
-			</column>
 			<column name="sn_name" type="VARCHAR(255)" />
+			<column name="caption" type="VARCHAR(255)" />
 		</createTable>
 	</changeSet>
 	<changeSet author="generated" id="1569361685633-2">
 		<createTable tableName="vk_member">
-			<column name="group_id" type="BINARY(255)">
+			<column name="group_id" type="BIGINT">
 				<constraints primaryKey="true" />
 			</column>
-			<column name="user_id" type="BINARY(255)">
+			<column name="user_id" type="BIGINT">
 				<constraints primaryKey="true" />
 			</column>
 			<column name="join_time" type="BIGINT">
@@ -33,8 +30,8 @@
 	</changeSet>
 	<changeSet author="generated" id="1569361685633-3">
 		<createTable tableName="vk_user">
-			<column name="id" type="BINARY(255)">
-				<constraints primaryKey="true" />
+			<column name="id" type="BIGINT">
+				<constraints primaryKey="true" nullable="false" />
 			</column>
 			<column name="bdate" type="VARCHAR(255)" />
 			<column name="can_send_friend_request" type="BIT(1)">
@@ -50,10 +47,6 @@
 			<column name="photo50" type="VARCHAR(255)" />
 			<column name="relation" type="INT" />
 			<column name="sex" type="INT">
-				<constraints nullable="false" />
-			</column>
-			<column name="sn_code" type="VARCHAR(255)" />
-			<column name="sn_id" type="INT">
 				<constraints nullable="false" />
 			</column>
 		</createTable>

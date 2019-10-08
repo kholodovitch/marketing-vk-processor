@@ -3,15 +3,12 @@ package com.nonamedev.marketing.vk.processor.service.impl;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.springframework.stereotype.Service;
 
 import com.nonamedev.marketing.vk.processor.config.Config;
-import com.nonamedev.marketing.vk.processor.datalayer.Member;
-import com.nonamedev.marketing.vk.processor.repository.MemberRepository;
 import com.nonamedev.marketing.vk.processor.tasks.GroupTask;
 import com.nonamedev.marketing.vk.processor.tasks.UserTask;
 import com.rabbitmq.client.Channel;
@@ -30,14 +27,12 @@ import lombok.extern.slf4j.Slf4j;
 public class GroupProcessingService extends QueueService<GroupTask> {
 
 	private final UserProcessingService userProcessingService;
-	private final MemberRepository memberRepo;
 	private final VkClientService vk;
 
-	public GroupProcessingService(UserProcessingService userProcessingService, MemberRepository memberRepo, VkClientService vk, Config config) {
+	public GroupProcessingService(UserProcessingService userProcessingService, VkClientService vk, Config config) {
 		super(config);
 
 		this.userProcessingService = userProcessingService;
-		this.memberRepo = memberRepo;
 		this.vk = vk;
 	}
 
@@ -63,7 +58,6 @@ public class GroupProcessingService extends QueueService<GroupTask> {
 		if (vkGroups.size() == 0)
 			return;
 
-		List<Member> existsMembers = memberRepo.findAllByMemberIdGroupId(group.getId());
 		List<UserXtrRole> vkMembers = IntStream
 				.rangeClosed(0, vkGroups.get(0).getMembersCount() / 1000)
 				.parallel()
@@ -74,17 +68,16 @@ public class GroupProcessingService extends QueueService<GroupTask> {
 		vkMembers
 				.parallelStream()
 				.forEach(vkUser -> {
-					processUser(group.getId(), existsMembers, vkUser);
+					processUser(group.getSnId(), vkUser);
 				});
 	}
 
-	private void processUser(UUID groupId, List<Member> existsMembers, UserXtrRole vkUser) {
+	private void processUser(long groupId, UserXtrRole vkUser) {
 		try {
 			UserTask userTask = UserTask
 					.builder()
 					.snUser(vkUser)
 					.groupId(groupId)
-					.members(existsMembers)
 					.build();
 			userProcessingService.send(userTask);
 		} catch (Exception e) {

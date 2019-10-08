@@ -1,9 +1,6 @@
 package com.nonamedev.marketing.vk.processor.datalayer;
 
-import java.util.UUID;
-
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
@@ -21,10 +18,7 @@ import lombok.NoArgsConstructor;
 public class User {
 
 	@Id
-	@GeneratedValue
-	private UUID id;
-	private String snCode;
-	private int snId;
+	private long id;
 	private String firstName;
 	private String lastName;
 	private String bdate;

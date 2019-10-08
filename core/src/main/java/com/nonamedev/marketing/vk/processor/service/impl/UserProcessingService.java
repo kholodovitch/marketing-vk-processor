@@ -1,7 +1,6 @@
 package com.nonamedev.marketing.vk.processor.service.impl;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
@@ -41,16 +40,11 @@ public class UserProcessingService extends QueueService<UserTask> {
 
 	@Override
 	protected void processTask(UserTask message) throws Exception {
-		Optional<User> existsUser = userRepo.findBySnId(message.getSnUser().getId());
-		UUID newUserId = !existsUser.isPresent() ? userRepo.saveAndFlush(toUser(message.getSnUser())).getId()
+		Optional<User> existsUser = userRepo.findById((long)message.getSnUser().getId());
+		long newUserId = !existsUser.isPresent() ? userRepo.saveAndFlush(toUser(message.getSnUser())).getId()
 				: existsUser.get().getId();
 
-		boolean alreadyExists = message
-				.getMembers()
-				.stream()
-				.map(Member::getMemberId)
-				.anyMatch(x -> x.getGroupId().equals(message.getGroupId()) && x.getUserId().equals(newUserId));
-		if (alreadyExists)
+		if (memberRepo.existsByMemberIdGroupIdAndMemberIdUserId(message.getGroupId(), newUserId))
 			return;
 
 		Member newMember = new Member();
@@ -61,10 +55,8 @@ public class UserProcessingService extends QueueService<UserTask> {
 	}
 
 	private User toUser(UserXtrRole vkUser) {
-		final UUID newId = UUID.randomUUID();
 		User user = new User();
-		user.setId(newId);
-		user.setSnId(vkUser.getId());
+		user.setId(vkUser.getId());
 		user.setFirstName(vkUser.getFirstName());
 		user.setLastName(vkUser.getLastName());
 		if (vkUser.getSex() != null)
