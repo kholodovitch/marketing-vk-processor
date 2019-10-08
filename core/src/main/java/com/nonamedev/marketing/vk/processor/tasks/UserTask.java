@@ -1,5 +1,7 @@
 package com.nonamedev.marketing.vk.processor.tasks;
 
+import java.util.List;
+
 import com.vk.api.sdk.objects.groups.UserXtrRole;
 
 import lombok.AllArgsConstructor;
@@ -13,7 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserTask {
 
-	private UserXtrRole snUser;
+	private List<UserXtrRole> newUsers;
 
 	private long groupId;
 

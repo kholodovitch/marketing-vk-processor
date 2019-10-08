@@ -1,6 +1,7 @@
 package com.nonamedev.marketing.vk.processor.service.impl;
 
-import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -40,18 +41,40 @@ public class UserProcessingService extends QueueService<UserTask> {
 
 	@Override
 	protected void processTask(UserTask message) throws Exception {
-		Optional<User> existsUser = userRepo.findById((long)message.getSnUser().getId());
-		long newUserId = !existsUser.isPresent() ? userRepo.saveAndFlush(toUser(message.getSnUser())).getId()
-				: existsUser.get().getId();
+		List<Long> userIds = message
+				.getNewUsers()
+				.stream()
+				.map(x -> (long) x.getId())
+				.collect(Collectors.toList());
+		List<Long> existsUserIds = userRepo
+				.findAllById(userIds)
+				.stream()
+				.map(x -> x.getId())
+				.collect(Collectors.toList());
+		List<User> newUsers = message
+				.getNewUsers()
+				.stream()
+				.filter(x -> !existsUserIds.contains((long) x.getId()))
+				.map(x -> toUser(x))
+				.collect(Collectors.toList());
+		newUsers = userRepo.saveAll(newUsers);
 
-		if (memberRepo.existsByMemberIdGroupIdAndMemberIdUserId(message.getGroupId(), newUserId))
-			return;
-
-		Member newMember = new Member();
-		newMember.setMemberId(new MemberIdentity(message.getGroupId(), newUserId));
-		newMember.setJoinTime(System.currentTimeMillis() / 1000L);
-
-		memberRepo.saveAndFlush(newMember);
+		long joinTime = System.currentTimeMillis() / 1000L;
+		List<Long> existsMembers = memberRepo
+				.findByMemberIdGroupId(message.getGroupId())
+				.stream()
+				.map(x -> x.getMemberId().getUserId())
+				.collect(Collectors.toList());
+		List<Member> newMembers = userIds
+				.stream()
+				.filter(x -> !existsMembers.contains(x))
+				.map(id -> Member
+						.builder()
+						.memberId(new MemberIdentity(message.getGroupId(), id))
+						.joinTime(joinTime)
+						.build())
+				.collect(Collectors.toList());
+		newMembers = memberRepo.saveAll(newMembers);
 	}
 
 	private User toUser(UserXtrRole vkUser) {

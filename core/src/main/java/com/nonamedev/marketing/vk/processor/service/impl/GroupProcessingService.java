@@ -64,25 +64,12 @@ public class GroupProcessingService extends QueueService<GroupTask> {
 				.mapToObj(x -> getGroupUsers(group.getSnId(), x))
 				.flatMap(List::stream)
 				.collect(Collectors.toList());
-
-		vkMembers
-				.parallelStream()
-				.forEach(vkUser -> {
-					processUser(group.getSnId(), vkUser);
-				});
-	}
-
-	private void processUser(long groupId, UserXtrRole vkUser) {
-		try {
-			UserTask userTask = UserTask
-					.builder()
-					.snUser(vkUser)
-					.groupId(groupId)
-					.build();
-			userProcessingService.send(userTask);
-		} catch (Exception e) {
-			log.error(MessageFormat.format("Error on process user ({0}): {1}", vkUser.getId(), e.getMessage()));
-		}
+		UserTask userTask = UserTask
+				.builder()
+				.newUsers(vkMembers)
+				.groupId(group.getSnId())
+				.build();
+		userProcessingService.send(userTask);
 	}
 
 	public List<UserXtrRole> getGroupUsers(long groupSnId, int usersPageIndex) {
