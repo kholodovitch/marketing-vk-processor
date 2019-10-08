@@ -58,18 +58,16 @@ public class GroupProcessingService extends QueueService<GroupTask> {
 		if (vkGroups.size() == 0)
 			return;
 
-		List<UserXtrRole> vkMembers = IntStream
+		IntStream
 				.rangeClosed(0, vkGroups.get(0).getMembersCount() / 1000)
 				.parallel()
 				.mapToObj(x -> getGroupUsers(group.getSnId(), x))
-				.flatMap(List::stream)
-				.collect(Collectors.toList());
-		UserTask userTask = UserTask
-				.builder()
-				.newUsers(vkMembers)
-				.groupId(group.getSnId())
-				.build();
-		userProcessingService.send(userTask);
+				.map(vkUsers -> UserTask
+						.builder()
+						.newUsers(vkUsers)
+						.groupId(group.getSnId())
+						.build())
+				.forEach(userProcessingService::send);
 	}
 
 	public List<UserXtrRole> getGroupUsers(long groupSnId, int usersPageIndex) {
