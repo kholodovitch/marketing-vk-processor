@@ -1,4 +1,4 @@
-package com.nonamedev.marketing.vk.processor.service;
+package com.nonamedev.marketing.vk.processor.services;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.google.gson.Gson;
-import com.nonamedev.marketing.vk.processor.MainApp;
+import com.nonamedev.marketing.vk.processor.config.Config;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -19,6 +19,8 @@ import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.MessageProperties;
 
 public abstract class QueueService<T> {
+	
+	private final Config config;
 
 	public static abstract class Executor<T> extends DefaultConsumer {
 
@@ -55,7 +57,8 @@ public abstract class QueueService<T> {
 	private String rabbitQueue;
 	private Channel rabbitChannel;
 
-	public QueueService(Class<T> typeParameterClass) {
+	public QueueService(Config config) {
+		this.config = config;
 		initRabbit();
 	}
 
@@ -65,10 +68,10 @@ public abstract class QueueService<T> {
 		while (errorCount < CONNECT_ERRORS_MAX) {
 			try {
 				ConnectionFactory factory = new ConnectionFactory();
-				factory.setHost(MainApp.Settings.getRabbitHost());
+				factory.setHost(config.getRabbit().getHost());
 				factory.setAutomaticRecoveryEnabled(true);
 				Connection connection = factory.newConnection();
-				rabbitQueue = MainApp.Settings.getRabbitQueuePrefix() + getQueueName();
+				rabbitQueue = config.getRabbit().getQueuePrefix() + getQueueName();
 				rabbitChannel = connection.createChannel();
 				rabbitChannel.queueDeclare(rabbitQueue, true, false, false, null);
 				rabbitChannel.basicQos(4);

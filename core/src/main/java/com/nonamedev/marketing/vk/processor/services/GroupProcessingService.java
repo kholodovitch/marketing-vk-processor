@@ -7,21 +7,17 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
+import com.nonamedev.marketing.vk.processor.config.Config;
 import com.nonamedev.marketing.vk.processor.datalayer.Member;
 import com.nonamedev.marketing.vk.processor.repository.MemberRepository;
-import com.nonamedev.marketing.vk.processor.service.QueueService;
 import com.nonamedev.marketing.vk.processor.tasks.GroupTask;
 import com.nonamedev.marketing.vk.processor.tasks.UserTask;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Consumer;
-import com.vk.api.sdk.client.TransportClient;
-import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.ServiceActor;
-import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.groups.GroupFull;
 import com.vk.api.sdk.objects.groups.UserXtrRole;
 import com.vk.api.sdk.queries.groups.GroupField;
@@ -33,17 +29,16 @@ public class GroupProcessingService extends QueueService<GroupTask> {
 
 	private final UserProcessingService userProcessingService;
 	private final MemberRepository memberRepo;
-	private final VkApiClient vk;
+	private final VkClientService vk;
 	private final Logger logger;
 
-	public GroupProcessingService(UserProcessingService userProcessingService, MemberRepository memberRepo) {
-		super(GroupTask.class);
+	public GroupProcessingService(UserProcessingService userProcessingService, MemberRepository memberRepo, VkClientService vk, Logger logger, Config config) {
+		super(config);
 
 		this.userProcessingService = userProcessingService;
 		this.memberRepo = memberRepo;
-		TransportClient transportClient = HttpTransportClient.getInstance();
-		vk = new VkApiClient(transportClient);
-		this.logger = LogManager.getLogger(GroupProcessingService.class);
+		this.vk = vk;
+		this.logger = logger;
 	}
 
 	@Override

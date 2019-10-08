@@ -5,12 +5,12 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.nonamedev.marketing.vk.processor.config.Config;
 import com.nonamedev.marketing.vk.processor.datalayer.Member;
 import com.nonamedev.marketing.vk.processor.datalayer.MemberIdentity;
 import com.nonamedev.marketing.vk.processor.datalayer.User;
 import com.nonamedev.marketing.vk.processor.repository.MemberRepository;
 import com.nonamedev.marketing.vk.processor.repository.UserRepository;
-import com.nonamedev.marketing.vk.processor.service.QueueService;
 import com.nonamedev.marketing.vk.processor.tasks.UserTask;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Consumer;
@@ -22,8 +22,8 @@ public class UserProcessingService extends QueueService<UserTask> {
 	private final MemberRepository memberRepo;
 	private final UserRepository userRepo;
 
-	public UserProcessingService(MemberRepository memberRepo, UserRepository userRepo) {
-		super(UserTask.class);
+	public UserProcessingService(MemberRepository memberRepo, UserRepository userRepo, Config config) {
+		super(config);
 
 		this.memberRepo = memberRepo;
 		this.userRepo = userRepo;

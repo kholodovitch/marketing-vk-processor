@@ -16,14 +16,10 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class MainApp implements ApplicationRunner {
-	public static final AppSettings Settings = new AppSettings();
-
 	private final GroupProcessingService groupProcessingService;
 	private final GroupRepository groupRepo;
 
 	public void run(ApplicationArguments args) throws Exception {
-		AppSettingsManager.loadConfig();
-
 		Group groupNew;
 		if (groupRepo.count() == 0) {
 			groupNew = Group
