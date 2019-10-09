@@ -1,0 +1,55 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:appdba="http://www.datical.net/xml/ns/appdba"
+	xmlns:datical="http://www.datical.net/xml/ns/datical"
+	xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.6.xsd">
+	<changeSet author="generated" id="1569361685633-1">
+		<createTable tableName="vk_group">
+			<column name="id" type="BIGINT">
+				<constraints primaryKey="true" />
+			</column>
+			<column name="sn_name" type="VARCHAR(255)" />
+			<column name="caption" type="VARCHAR(255)" />
+		</createTable>
+	</changeSet>
+	<changeSet author="generated" id="1569361685633-2">
+		<createTable tableName="vk_member">
+			<column name="group_id" type="BIGINT">
+				<constraints primaryKey="true" />
+			</column>
+			<column name="user_id" type="BIGINT">
+				<constraints primaryKey="true" />
+			</column>
+			<column name="join_time" type="BIGINT">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+	</changeSet>
+	<changeSet author="generated" id="1569361685633-3">
+		<createTable tableName="vk_user">
+			<column name="id" type="BIGINT">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="bdate" type="VARCHAR(255)" />
+			<column name="can_send_friend_request" type="BIT(1)">
+				<constraints nullable="false" />
+			</column>
+			<column name="can_write_private_message" type="BIT(1)">
+				<constraints nullable="false" />
+			</column>
+			<column name="city_id" type="INT" />
+			<column name="country_id" type="INT" />
+			<column name="first_name" type="VARCHAR(255)" />
+			<column name="last_name" type="VARCHAR(255)" />
+			<column name="photo50" type="VARCHAR(255)" />
+			<column name="relation" type="INT" />
+			<column name="sex" type="INT">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+	</changeSet>
+
+</databaseChangeLog>
