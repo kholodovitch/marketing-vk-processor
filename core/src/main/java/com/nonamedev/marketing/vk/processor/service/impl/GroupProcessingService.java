@@ -3,7 +3,6 @@ package com.nonamedev.marketing.vk.processor.service.impl;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import org.springframework.stereotype.Service;
@@ -13,7 +12,6 @@ import com.nonamedev.marketing.vk.processor.tasks.GroupTask;
 import com.nonamedev.marketing.vk.processor.tasks.UserTask;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Consumer;
-import com.vk.api.sdk.client.actors.ServiceActor;
 import com.vk.api.sdk.objects.groups.GroupFull;
 import com.vk.api.sdk.objects.groups.UserXtrRole;
 import com.vk.api.sdk.queries.groups.GroupField;
@@ -48,10 +46,9 @@ public class GroupProcessingService extends QueueService<GroupTask> {
 
 	@Override
 	protected void processTask(GroupTask group) throws Exception {
-		ServiceActor serviceAction = getServiceActor();
 		List<GroupFull> vkGroups = vk
 				.groups()
-				.getById(serviceAction)
+				.getById(vk.getServiceActor())
 				.groupId(Long.toString(group.getSnId()))
 				.fields(GroupField.MEMBERS_COUNT)
 				.execute();
@@ -77,7 +74,7 @@ public class GroupProcessingService extends QueueService<GroupTask> {
 
 			GroupsGetMembersQueryWithFields request = vk
 					.groups()
-					.getMembers(getServiceActor(), fields)
+					.getMembers(vk.getServiceActor(), fields)
 					.groupId(Long.toString(groupSnId))
 					.offset(usersPageIndex * 1000);
 			return request.execute().getItems();
@@ -87,10 +84,6 @@ public class GroupProcessingService extends QueueService<GroupTask> {
 			log.error(exMsg);
 			return new ArrayList<UserXtrRole>();
 		}
-	}
-
-	private ServiceActor getServiceActor() {
-		return new ServiceActor(5374209, "aaff4d61aaff4d61aa467e5f32aaad4c60aaaffaaff4d61f24f0d6070dc421ee47c7010");
 	}
 
 	public class Executor extends QueueService.Executor<GroupTask> {
