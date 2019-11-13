@@ -3,6 +3,7 @@ package com.nonamedev.marketing.vk.processor.service.impl;
 import java.io.IOException;
 import java.net.SocketException;
 import java.text.MessageFormat;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,8 +19,8 @@ import com.rabbitmq.client.DefaultConsumer;
 import com.rabbitmq.client.Envelope;
 import com.rabbitmq.client.MessageProperties;
 
-public abstract class QueueService<T> {
-	
+public abstract class QueueService<T extends Object> {
+
 	private final Config config;
 
 	public static abstract class Executor<T> extends DefaultConsumer {
@@ -75,19 +76,20 @@ public abstract class QueueService<T> {
 				rabbitChannel = connection.createChannel();
 				rabbitChannel.queueDeclare(rabbitQueue, true, false, false, null);
 				rabbitChannel.basicQos(4);
-				//logger.trace("Rabbit queue starting...");
+				// logger.trace("Rabbit queue starting...");
 				rabbitChannel.basicConsume(rabbitQueue, false, getExecutor(rabbitChannel));
-				//logger.trace("Rabbit queue done");
+				// logger.trace("Rabbit queue done");
 				return;
 			} catch (SocketException e) {
-				//logger.error(MessageFormat.format("Error on init rabbit-connection [attempt #{0}] : {1}", errorCount, e.getMessage()));
+				// logger.error(MessageFormat.format("Error on init rabbit-connection [attempt
+				// #{0}] : {1}", errorCount, e.getMessage()));
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException e1) {
 				}
 				errorCount++;
 			} catch (Throwable e) {
-				//logger.fatal("Error on init rabbit-connection", e);
+				// logger.fatal("Error on init rabbit-connection", e);
 				throw new RuntimeException(e);
 			}
 		}
@@ -96,6 +98,10 @@ public abstract class QueueService<T> {
 			throw new RuntimeException(
 					MessageFormat.format("Error on init rabbit-connection after {0} attempts", CONNECT_ERRORS_MAX));
 		}
+	}
+
+	public void send(List<T> messages) {
+		messages.forEach(this::send);
 	}
 
 	public void send(T msg) {

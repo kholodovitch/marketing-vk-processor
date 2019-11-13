@@ -1,5 +1,3 @@
 spring:
    application:
       name: marketing-vk-processor
-   profiles:
-      active: local

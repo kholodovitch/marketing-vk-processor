@@ -1,6 +1,9 @@
 package com.nonamedev.marketing.vk.processor.service.impl;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Component;
 
@@ -45,6 +48,18 @@ public class ProcessorServiceImpl implements ProcessorService {
 				groupNew.getId(),
 				groupNew.getSnName(),
 				groupNew.getCaption());
+	}
+
+	@Override
+	public void processGroups(Long[] groupIds) {
+		List<Group> groups = groupIds != null && groupIds.length > 0
+				? groupRepo.findAllById(Arrays.asList(groupIds))
+				: groupRepo.findAll();
+		List<GroupTask> groupTasks = groups
+				.stream()
+				.map(x -> GroupTask.builder().snId(x.getId()).build())
+				.collect(Collectors.toList());
+		groupProcessingService.send(groupTasks);
 	}
 
 }

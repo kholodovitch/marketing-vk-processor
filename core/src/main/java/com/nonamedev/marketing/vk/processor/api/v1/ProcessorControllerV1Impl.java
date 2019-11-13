@@ -22,4 +22,10 @@ public class ProcessorControllerV1Impl implements ProcessorControllerV1 {
 		return ResponseEntity.ok(processorService.createGroup(group));
 	}
 
+	@Override
+	public ResponseEntity<Void> processGroups(Long[] groupIds) {
+		processorService.processGroups(groupIds);
+		return ResponseEntity.ok().build();
+	}
+
 }

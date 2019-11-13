@@ -13,4 +13,7 @@ public interface ProcessorControllerV1 {
 	@PostMapping(value = "/api/v1/groups")
 	ResponseEntity<GroupDto> createGroup(@RequestBody GroupDto group);
 
+	@PostMapping(value = "/api/v1/groups/process")
+	ResponseEntity<Void> processGroups(@RequestBody Long[] groupIds);
+
 }

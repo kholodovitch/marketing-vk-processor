@@ -6,4 +6,6 @@ public interface ProcessorService {
 
 	GroupDto createGroup(GroupDto group);
 
+	void processGroups(Long[] groupIds);
+
 }
